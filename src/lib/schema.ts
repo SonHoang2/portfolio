@@ -1,6 +1,5 @@
 import { site } from '../data/site';
-
-const abs = (path: string) => new URL(path, site.url).href;
+import { absoluteUrl as abs } from './paths';
 
 export const personId = abs('/#person');
 export const websiteId = abs('/#website');

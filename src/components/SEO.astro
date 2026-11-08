@@ -1,4 +1,5 @@
 ---
+import { withBase, absoluteUrl } from '../lib/paths';
 import { site } from '../data/site';
 
 export interface Props {
@@ -30,7 +31,7 @@ const {
 
 const fullTitle = title ? `${title} | ${site.name}` : site.title;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const imageUrl = new URL(image, Astro.site).href;
+const imageUrl = absoluteUrl(image);
 const robots = noindex
   ? 'noindex, follow'
   : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
@@ -68,7 +69,7 @@ const jsonLd =
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={imageUrl} />
 
-{site.showBlog && <link rel="alternate" type="application/rss+xml" title={`Posts by ${site.name}`} href="/rss.xml" />}
-<link rel="sitemap" href="/sitemap-index.xml" />
+{site.showBlog && <link rel="alternate" type="application/rss+xml" title={`Posts by ${site.name}`} href={withBase('/rss.xml')} />}
+<link rel="sitemap" href={withBase('/sitemap-index.xml')} />
 
 {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}

@@ -1,4 +1,5 @@
 ---
+import { withBase, absoluteUrl } from '../../lib/paths';
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { site } from '../../data/site';
@@ -25,9 +26,9 @@ const schema = [
     '@type': 'BlogPosting',
     headline: title,
     description,
-    url: new URL(path, site.url).href,
-    mainEntityOfPage: new URL(path, site.url).href,
-    image: new URL(image, site.url).href,
+    url: absoluteUrl(path),
+    mainEntityOfPage: absoluteUrl(path),
+    image: absoluteUrl(image),
     datePublished: pubDate.toISOString(),
     dateModified: (updatedDate ?? pubDate).toISOString(),
     inLanguage: site.lang,
@@ -56,7 +57,7 @@ const schema = [
   <article class="wrap-narrow post">
     <header>
       <nav class="label crumbs" aria-label="Breadcrumb">
-        <a href="/">Home</a> / <a href="/blog/">Blog</a>
+        <a href={withBase('/')}>Home</a> / <a href={withBase('/blog/')}>Blog</a>
       </nav>
       <h1>{title}</h1>
       <p class="label info">
@@ -84,7 +85,7 @@ const schema = [
       <nav class="wrap-narrow pager" aria-label="More posts">
         <div>
           {newer && (
-            <a href={`/blog/${newer.id}/`}>
+            <a href={withBase(`/blog/${newer.id}/`)}>
               <span class="label">Newer post</span>
               {newer.data.title}
             </a>
@@ -92,7 +93,7 @@ const schema = [
         </div>
         <div>
           {older && (
-            <a href={`/blog/${older.id}/`}>
+            <a href={withBase(`/blog/${older.id}/`)}>
               <span class="label">Older post</span>
               {older.data.title}
             </a>

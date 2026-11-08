@@ -5,7 +5,9 @@
  */
 export const site = {
   /** Real domain, no trailing slash. Used by canonical URLs, sitemap and OG tags. */
-  url: 'https://example.com',
+  url: 'https://sonhoang2.github.io',
+  /** Path the site is served under: the repository name on GitHub Pages. */
+  base: '/portfolio',
   lang: 'en',
   locale: 'en_US',
 

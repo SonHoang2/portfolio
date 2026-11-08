@@ -1,4 +1,5 @@
 ---
+import { withBase, absoluteUrl } from '../lib/paths';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectGrid from '../components/ProjectGrid.astro';
 import PostList from '../components/PostList.astro';
@@ -14,8 +15,8 @@ const schema = [
   websiteSchema,
   {
     '@type': 'ProfilePage',
-    '@id': new URL('/#profile', site.url).href,
-    url: new URL('/', site.url).href,
+    '@id': absoluteUrl('/#profile'),
+    url: absoluteUrl('/'),
     name: site.title,
     inLanguage: site.lang,
     mainEntity: { '@id': personId },
@@ -57,7 +58,7 @@ const schema = [
         <div>
           <p class="lede">{site.hero.lede}</p>
           <div class="actions">
-            <a class="button primary" href="/projects/">View projects</a>
+            <a class="button primary" href={withBase('/projects/')}>View projects</a>
             <a class="button" href="#contact">Contact</a>
           </div>
         </div>
@@ -79,7 +80,7 @@ const schema = [
   <section class="section wrap" aria-labelledby="projects">
     <div class="section-head">
       <h2 id="projects">Selected projects</h2>
-      <a class="arrow-link" href="/projects/">All projects</a>
+      <a class="arrow-link" href={withBase('/projects/')}>All projects</a>
     </div>
     <ProjectGrid projects={projects} />
   </section>
@@ -137,7 +138,7 @@ const schema = [
       <section class="section wrap" aria-labelledby="blog">
         <div class="section-head">
           <h2 id="blog">Latest posts</h2>
-          <a class="arrow-link" href="/blog/">
+          <a class="arrow-link" href={withBase('/blog/')}>
             All posts
           </a>
         </div>

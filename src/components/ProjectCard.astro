@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../lib/paths';
 import type { CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import ProjectCover from './ProjectCover.astro';
@@ -15,7 +16,7 @@ const number = String(index + 1).padStart(2, '0');
 ---
 
 <article class="card reveal">
-  <a class="link" href={`/projects/${project.id}/`}>
+  <a class="link" href={withBase(`/projects/${project.id}/`)}>
     <div class="media">
       {
         cover ? (

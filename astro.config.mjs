@@ -5,6 +5,7 @@ import { site } from './src/data/site.ts';
 
 export default defineConfig({
   site: site.url,
+  base: site.base,
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   integrations: [
     sitemap({

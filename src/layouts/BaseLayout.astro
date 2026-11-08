@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../lib/paths';
 import '@fontsource-variable/bricolage-grotesque/opsz.css';
 import '@fontsource-variable/jetbrains-mono/index.css';
 import '@fontsource/be-vietnam-pro/400.css';
@@ -43,9 +44,9 @@ type Props = SEOProps;
 
     <meta name="theme-color" content="#f1f2ec" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0e100c" media="(prefers-color-scheme: dark)" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={withBase('/apple-touch-icon.png')} />
+    <link rel="manifest" href={withBase('/site.webmanifest')} />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
