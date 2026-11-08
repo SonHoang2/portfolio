@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostList from '../../components/PostList.astro';
+import { site } from '../../data/site';
+import { getPosts } from '../../lib/content';
+import { breadcrumbSchema, personId, personSchema } from '../../lib/schema';
+
+const posts = await getPosts();
+const description = `Writing by ${site.name} on web development.`;
+
+const schema = [
+  personSchema,
+  {
+    '@type': 'Blog',
+    name: `Posts by ${site.name}`,
+    description,
+    url: new URL('/blog/', site.url).href,
+    inLanguage: site.lang,
+    author: { '@id': personId },
+  },
+  breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Blog', path: '/blog/' },
+  ]),
+];
+---
+
+<BaseLayout title="Blog" description={description} image="/og/blog.png" schema={schema} noindex={!site.showBlog}>
+  <header class="page-head wrap">
+    <h1>Blog</h1>
+    <p>{posts.length > 0 ? 'Notes on programming and lessons from my projects.' : 'No posts yet.'}</p>
+  </header>
+  <section class="wrap" style="padding-bottom: clamp(4.5rem, 10vw, 9rem)" aria-label="Post list">
+    <PostList posts={posts} headingLevel="h2" />
+  </section>
+</BaseLayout>

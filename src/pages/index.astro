@@ -1,0 +1,399 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectGrid from '../components/ProjectGrid.astro';
+import PostList from '../components/PostList.astro';
+import { site } from '../data/site';
+import { getPosts, getProjects } from '../lib/content';
+import { personId, personSchema, websiteSchema } from '../lib/schema';
+
+const projects = (await getProjects()).filter((project) => project.data.featured).slice(0, 4);
+const posts = (await getPosts()).slice(0, 3);
+
+const schema = [
+  personSchema,
+  websiteSchema,
+  {
+    '@type': 'ProfilePage',
+    '@id': new URL('/#profile', site.url).href,
+    url: new URL('/', site.url).href,
+    name: site.title,
+    inLanguage: site.lang,
+    mainEntity: { '@id': personId },
+  },
+];
+---
+
+<BaseLayout type="profile" schema={schema}>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div class="status label">
+        {
+          site.availability.open && (
+            <span class="available">
+              <i aria-hidden="true" />
+              {site.availability.label}
+            </span>
+          )
+        }
+        <span>
+          {site.location.label}
+          <time data-clock aria-hidden="true"></time>
+          {site.location.utc}
+        </span>
+      </div>
+
+      <div class="stage">
+        <div class="orb" aria-hidden="true"></div>
+        <h1>
+          <span class="name">
+            {site.nameLines.map((line) => <span class="line">{line}</span>)}
+          </span>
+          <span class="visually-hidden">, {site.jobTitle}</span>
+        </h1>
+      </div>
+
+      <div class="intro">
+        <p class="role">{site.jobTitle}</p>
+        <div>
+          <p class="lede">{site.hero.lede}</p>
+          <div class="actions">
+            <a class="button primary" href="/projects/">View projects</a>
+            <a class="button" href="#contact">Contact</a>
+          </div>
+        </div>
+      </div>
+
+      <dl class="facts">
+        {
+          site.hero.facts.map((fact) => (
+            <div>
+              <dt class="label">{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="projects">
+    <div class="section-head">
+      <h2 id="projects">Selected projects</h2>
+      <a class="arrow-link" href="/projects/">All projects</a>
+    </div>
+    <ProjectGrid projects={projects} />
+  </section>
+
+  <section class="section about-section" aria-labelledby="about">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="about">About</h2>
+      </div>
+
+      <div class="about">
+        <p class="statement reveal">{site.about.statement}</p>
+        <div class="about-copy reveal">
+          {site.about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+      </div>
+
+      <div class="columns">
+        <div>
+          <h3 class="sub">Journey</h3>
+          <ol class="timeline">
+            {
+              site.journey.map((step) => (
+                <li class="reveal">
+                  <span class="label">{step.period}</span>
+                  <div>
+                    <p class="job">{step.title}</p>
+                    <p class="job-summary">{step.summary}</p>
+                  </div>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+
+        <div>
+          <h3 class="sub">Skills</h3>
+          <dl class="skills">
+            {
+              site.skills.map((skill) => (
+                <div class="reveal">
+                  <dt class="label">{skill.group}</dt>
+                  <dd>{skill.items.join(', ')}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {
+    site.showBlog && posts.length > 0 && (
+      <section class="section wrap" aria-labelledby="blog">
+        <div class="section-head">
+          <h2 id="blog">Latest posts</h2>
+          <a class="arrow-link" href="/blog/">
+            All posts
+          </a>
+        </div>
+        <PostList posts={posts} />
+      </section>
+    )
+  }
+
+  <section class="contact" aria-labelledby="contact">
+    <div class="wrap">
+      <h2 id="contact">{site.contact.heading}</h2>
+      <a class="email" href={site.contact.link.href} rel="me noopener" target="_blank">{site.contact.link.label}</a>
+      <div class="contact-foot">
+        <p>{site.contact.note}</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* isolation + background: the name blends only against the hero. */
+  .hero {
+    --name-size: clamp(4.5rem, 16.5vw, 15rem);
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    background: var(--bg);
+  }
+
+  .stage { position: relative; }
+
+  .hero-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: clamp(2rem, 4vh, 3.5rem);
+    min-height: calc(100svh - var(--header-h));
+    padding-block: clamp(1.25rem, 3vh, 2.5rem);
+  }
+
+  /*
+   * A sun in light theme, eclipsed into a crescent moon in dark theme.
+   * Size and position follow the name font size so it stays within the name block
+   * and never covers the intro below.
+   */
+  .orb {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: calc(var(--name-size) * 2.25);
+    width: calc(var(--name-size) * 2.12);
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .orb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    border-radius: 50%;
+    transform: translate(105%, -105%);
+    transition: transform 0.9s var(--ease);
+  }
+  :global([data-theme='dark']) .orb::after { transform: translate(-24%, -16%); }
+
+  .status {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 2rem;
+    color: var(--ink-soft);
+  }
+  .available { display: inline-flex; align-items: center; gap: 0.55em; }
+  .available i {
+    width: 0.55em;
+    height: 0.55em;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  [data-clock] { font-variant-numeric: tabular-nums; }
+
+  @keyframes pulse { 50% { opacity: 0.35; } }
+
+  h1 { letter-spacing: -0.045em; line-height: 1.06; }
+
+  /* White text + difference: inverts over the orb in both themes. */
+  .name {
+    display: block;
+    color: #fff;
+    mix-blend-mode: difference;
+    font-size: var(--name-size);
+    overflow-wrap: anywhere;
+  }
+  .line { display: block; }
+
+  .intro {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.75rem clamp(1rem, 3vw, 3rem);
+    align-items: start;
+  }
+  .role {
+    grid-column: span 5;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    padding-top: 0.5rem;
+  }
+  .intro > div { grid-column: span 7; }
+  .lede {
+    max-width: 40rem;
+    font-size: clamp(1.2rem, 2.1vw, 1.75rem);
+    line-height: 1.45;
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 3rem;
+    padding-inline: 1.5rem;
+    border: 1px solid var(--ink);
+    border-radius: 99px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .button:hover { background: var(--ink); color: var(--bg); }
+  .button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .button.primary:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem clamp(1rem, 3vw, 3rem);
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .facts dd { font-size: 0.98rem; font-weight: 500; }
+
+  .about-section { background: var(--bg-raised); }
+
+  .about {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 2rem clamp(1rem, 3vw, 3rem);
+  }
+  .statement {
+    grid-column: span 7;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.6vw, 3.25rem);
+    font-weight: 600;
+    line-height: 1.22;
+    letter-spacing: -0.02em;
+  }
+  .about-copy { grid-column: 9 / span 4; color: var(--ink-soft); }
+  .about-copy p + p { margin-top: 1em; }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 3rem clamp(1rem, 3vw, 3rem);
+    margin-top: clamp(4rem, 8vw, 7rem);
+  }
+  .columns > :first-child { grid-column: span 7; }
+  .columns > :last-child { grid-column: 9 / span 4; }
+
+  .sub {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 1.25rem;
+  }
+
+  .timeline li {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 0.25rem 1.5rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .timeline .label { padding-top: 0.3rem; }
+  .job { font-weight: 500; font-size: 1.125rem; }
+  .job-summary { margin-top: 0.25rem; color: var(--ink-soft); }
+
+  .skills > div { padding-block: 1rem; border-bottom: 1px solid var(--line); }
+
+  .contact {
+    padding-block: clamp(5rem, 12vw, 10rem) clamp(2rem, 4vw, 3.5rem);
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .contact h2 {
+    max-width: 16ch;
+    font-size: clamp(2.75rem, 8vw, 7.5rem);
+    line-height: 1.08;
+  }
+  .email {
+    display: inline-block;
+    margin-top: clamp(2rem, 5vw, 4rem);
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 4.4vw, 3.75rem);
+    font-weight: 500;
+    overflow-wrap: anywhere;
+    text-decoration-thickness: 2px;
+  }
+  .contact-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-top: clamp(3rem, 7vw, 6rem);
+  }
+  .contact :focus-visible { outline-color: var(--accent-ink); }
+
+  @media (max-width: 47.99rem) {
+    .hero-inner { min-height: 0; gap: 2.25rem; }
+    .role, .intro > div { grid-column: 1 / -1; }
+    .facts { grid-template-columns: 1fr; }
+    .statement, .about-copy { grid-column: 1 / -1; }
+    .columns > :first-child, .columns > :last-child { grid-column: 1 / -1; }
+    .timeline li { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .available i { animation: none; }
+  }
+</style>
+
+<script>
+  const clock = document.querySelector<HTMLTimeElement>('[data-clock]');
+  if (clock) {
+    const format = new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Ho_Chi_Minh',
+    });
+    const tick = () => {
+      clock.textContent = ` ${format.format(new Date())} `;
+    };
+    tick();
+    setInterval(tick, 30_000);
+  }
+</script>

@@ -1,0 +1,145 @@
+---
+import { render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCover from '../../components/ProjectCover.astro';
+import { site } from '../../data/site';
+import { getProjects } from '../../lib/content';
+import { breadcrumbSchema, personId, personSchema } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project, index) => ({
+    params: { slug: project.id },
+    props: { project, next: projects[(index + 1) % projects.length] },
+  }));
+}
+
+const { project, next } = Astro.props;
+const { title, summary, year, role, client, stack, url, repo, cover, coverAlt, pattern } = project.data;
+const { Content } = await render(project);
+
+const path = `/projects/${project.id}/`;
+const schema = [
+  personSchema,
+  {
+    '@type': 'CreativeWork',
+    name: title,
+    headline: title,
+    description: summary,
+    url: new URL(path, site.url).href,
+    image: new URL(`/og/projects/${project.id}.png`, site.url).href,
+    dateCreated: String(year),
+    inLanguage: site.lang,
+    author: { '@id': personId },
+    keywords: stack.join(', '),
+  },
+  breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Projects', path: '/projects/' },
+    { name: title, path },
+  ]),
+];
+---
+
+<BaseLayout title={title} description={summary} image={`/og/projects/${project.id}.png`} type="article" schema={schema}>
+  <article>
+    <header class="page-head wrap">
+      <nav class="label crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a> / <a href="/projects/">Projects</a>
+      </nav>
+      <h1>{title}</h1>
+      <p>{summary}</p>
+    </header>
+
+    <div class="wrap">
+      <dl class="meta">
+        <div><dt class="label">Role</dt><dd>{role}</dd></div>
+        {client && <div><dt class="label">Client</dt><dd>{client}</dd></div>}
+        <div><dt class="label">Year</dt><dd>{year}</dd></div>
+        <div><dt class="label">Stack</dt><dd>{stack.join(', ')}</dd></div>
+        {
+          (url || repo) && (
+            <div>
+              <dt class="label">Links</dt>
+              <dd class="links">
+                {url && <a href={url} rel="noopener" target="_blank">Live site</a>}
+                {repo && <a href={repo} rel="noopener" target="_blank">Source code</a>}
+              </dd>
+            </div>
+          )
+        }
+      </dl>
+
+      <div class="media">
+        {
+          cover ? (
+            <Image src={cover} alt={coverAlt ?? title} widths={[800, 1200, 1800]} sizes="100vw" loading="eager" fetchpriority="high" />
+          ) : (
+            <ProjectCover pattern={pattern} seed={project.id} />
+          )
+        }
+      </div>
+    </div>
+
+    <div class="wrap-narrow prose body">
+      <Content />
+    </div>
+  </article>
+
+  {
+    next && next.id !== project.id && (
+      <aside class="wrap next">
+        <p class="label">Next project</p>
+        <a href={`/projects/${next.id}/`}>{next.data.title} →</a>
+      </aside>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .crumbs { margin-bottom: 1.5rem; }
+  .crumbs a { text-decoration: none; }
+  .crumbs a:hover { color: var(--accent); }
+
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 1rem clamp(1rem, 3vw, 3rem);
+    padding-block: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .meta dd { font-weight: 500; }
+  .links { display: flex; gap: 1rem; }
+
+  .media {
+    aspect-ratio: 16 / 8;
+    margin-top: 1rem;
+    overflow: hidden;
+    background: var(--bg-sunken);
+  }
+  .media > :global(*) { width: 100%; height: 100%; object-fit: cover; }
+
+  .body { padding-block: clamp(3rem, 7vw, 6rem); }
+
+  .next {
+    padding-block: clamp(2.5rem, 6vw, 5rem);
+    border-top: 1px solid var(--line);
+  }
+  .next a {
+    display: inline-block;
+    margin-top: 0.25rem;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .next a:hover { color: var(--accent); }
+
+  @media (max-width: 47.99rem) {
+    .media { aspect-ratio: 4 / 3; }
+  }
+</style>

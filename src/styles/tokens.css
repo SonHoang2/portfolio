@@ -1,0 +1,34 @@
+/*
+ * THEME COLORS.
+ * Each line is light-dark(LIGHT, DARK).
+ * Change a color here and the whole site follows.
+ */
+:root {
+  color-scheme: light dark;
+
+  /*                        LIGHT    DARK     */
+  --bg:          light-dark(#f1f2ec, #0e100c); /* page background */
+  --bg-raised:   light-dark(#fbfbf7, #171a14); /* cards, raised blocks */
+  --bg-sunken:   light-dark(#e4e6dc, #1d2119); /* covers, code blocks */
+  --ink:         light-dark(#13160f, #eceee4); /* primary text */
+  --ink-soft:    light-dark(#474c41, #b0b5a6); /* secondary text */
+  --ink-faint:   light-dark(#61675a, #868c7c); /* small labels */
+  --line:        light-dark(#cfd2c6, #2c3026); /* rules */
+  --accent:      light-dark(#2438e8, #c9f24b); /* accent */
+  --accent-ink:  light-dark(#ffffff, #12160a); /* text on accent */
+}
+
+/* The toggle only overrides color-scheme, light-dark() does the rest. */
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark']  { color-scheme: dark; }
+
+:root {
+  --font-display: 'Bricolage Grotesque Variable', 'Be Vietnam Pro', system-ui, sans-serif;
+  --font-body: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --max: 90rem;
+  --header-h: 4.25rem;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}

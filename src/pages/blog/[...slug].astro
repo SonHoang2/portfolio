@@ -1,0 +1,145 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site } from '../../data/site';
+import { formatDate, getPosts, readingTime } from '../../lib/content';
+import { breadcrumbSchema, personId, personSchema } from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, index) => ({
+    params: { slug: post.id },
+    props: { post, newer: posts[index - 1], older: posts[index + 1] },
+  }));
+}
+
+const { post, newer, older } = Astro.props;
+const { title, description, pubDate, updatedDate, tags } = post.data;
+const { Content } = await render(post);
+
+const path = `/blog/${post.id}/`;
+const image = `/og/blog/${post.id}.png`;
+const schema = [
+  personSchema,
+  {
+    '@type': 'BlogPosting',
+    headline: title,
+    description,
+    url: new URL(path, site.url).href,
+    mainEntityOfPage: new URL(path, site.url).href,
+    image: new URL(image, site.url).href,
+    datePublished: pubDate.toISOString(),
+    dateModified: (updatedDate ?? pubDate).toISOString(),
+    inLanguage: site.lang,
+    keywords: tags.join(', '),
+    author: { '@id': personId },
+    publisher: { '@id': personId },
+  },
+  breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Blog', path: '/blog/' },
+    { name: title, path },
+  ]),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  image={image}
+  type="article"
+  publishedTime={pubDate}
+  modifiedTime={updatedDate ?? pubDate}
+  tags={tags}
+  schema={schema}
+>
+  <article class="wrap-narrow post">
+    <header>
+      <nav class="label crumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a> / <a href="/blog/">Blog</a>
+      </nav>
+      <h1>{title}</h1>
+      <p class="label info">
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        <span>{readingTime(post.body)}</span>
+        {updatedDate && <span>Updated {formatDate(updatedDate)}</span>}
+      </p>
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      tags.length > 0 && (
+        <ul class="tags post-tags" aria-label="Topics">
+          {tags.map((tag) => <li>#{tag}</li>)}
+        </ul>
+      )
+    }
+  </article>
+
+  {
+    (newer || older) && (
+      <nav class="wrap-narrow pager" aria-label="More posts">
+        <div>
+          {newer && (
+            <a href={`/blog/${newer.id}/`}>
+              <span class="label">Newer post</span>
+              {newer.data.title}
+            </a>
+          )}
+        </div>
+        <div>
+          {older && (
+            <a href={`/blog/${older.id}/`}>
+              <span class="label">Older post</span>
+              {older.data.title}
+            </a>
+          )}
+        </div>
+      </nav>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .post { padding-block: clamp(3rem, 7vw, 6rem) clamp(2rem, 4vw, 3rem); }
+
+  .crumbs { margin-bottom: 1.5rem; }
+  .crumbs a { text-decoration: none; }
+  .crumbs a:hover { color: var(--accent); }
+
+  h1 { font-size: clamp(2.25rem, 6vw, 4rem); }
+
+  .info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin-block: 1.25rem clamp(2rem, 5vw, 3.5rem);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .post-tags { margin-top: 3rem; }
+
+  .pager {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    padding-block: 2rem clamp(4rem, 8vw, 6rem);
+    border-top: 1px solid var(--line);
+  }
+  .pager a {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .pager a:hover { color: var(--accent); }
+  .pager .label { display: block; margin-bottom: 0.25rem; font-weight: 400; }
+  .pager div:last-child { text-align: right; }
+</style>

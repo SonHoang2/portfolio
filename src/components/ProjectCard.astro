@@ -1,0 +1,84 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import ProjectCover from './ProjectCover.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  index: number;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { project, index, headingLevel: Heading = 'h3' } = Astro.props;
+const { title, summary, year, role, stack, cover, coverAlt, pattern } = project.data;
+const number = String(index + 1).padStart(2, '0');
+---
+
+<article class="card reveal">
+  <a class="link" href={`/projects/${project.id}/`}>
+    <div class="media">
+      {
+        cover ? (
+          <Image
+            src={cover}
+            alt={coverAlt ?? title}
+            widths={[480, 800, 1200]}
+            sizes="(max-width: 768px) 100vw, 60vw"
+            loading="lazy"
+          />
+        ) : (
+          <ProjectCover pattern={pattern} seed={project.id} />
+        )
+      }
+    </div>
+    <div class="meta label">
+      <span>{number}</span>
+      <span>{role}</span>
+      <span>{year}</span>
+    </div>
+    <Heading class="title">{title}</Heading>
+    <p class="summary">{summary}</p>
+  </a>
+  <ul class="tags" aria-label="Technologies used">
+    {stack.map((item) => <li>{item}</li>)}
+  </ul>
+</article>
+
+<style>
+  .link { display: block; text-decoration: none; }
+
+  .media {
+    aspect-ratio: var(--ratio, 8 / 5);
+    overflow: hidden;
+    background: var(--bg-sunken);
+  }
+  .media > :global(*) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s var(--ease);
+  }
+  .link:hover .media > :global(*) { transform: scale(1.04); }
+
+  .meta {
+    display: flex;
+    gap: 1.25rem;
+    padding-top: 0.9rem;
+  }
+  .meta span:last-child { margin-left: auto; }
+
+  .title {
+    margin-top: 0.5rem;
+    font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+    transition: color 0.2s;
+  }
+  .link:hover .title { color: var(--accent); }
+
+  .summary {
+    max-width: 36rem;
+    margin-top: 0.6rem;
+    color: var(--ink-soft);
+  }
+
+  .tags { margin-top: 0.8rem; }
+</style>

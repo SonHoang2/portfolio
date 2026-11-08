@@ -1,0 +1,60 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, readingTime } from '../lib/content';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { posts, headingLevel: Heading = 'h3' } = Astro.props;
+---
+
+<ol class="list">
+  {
+    posts.map((post) => (
+      <li class="reveal">
+        <a class="row" href={`/blog/${post.id}/`}>
+          <time class="label" datetime={post.data.pubDate.toISOString()}>
+            {formatDate(post.data.pubDate)}
+          </time>
+          <div>
+            <Heading class="title">{post.data.title}</Heading>
+            <p class="desc">{post.data.description}</p>
+          </div>
+          <span class="label read">{readingTime(post.body)}</span>
+        </a>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  li + li { border-top: 1px solid var(--line); }
+
+  .row {
+    display: grid;
+    grid-template-columns: 11rem 1fr auto;
+    gap: 0.5rem 2rem;
+    align-items: baseline;
+    padding-block: clamp(1.25rem, 2.5vw, 2rem);
+    text-decoration: none;
+  }
+
+  .title {
+    font-size: clamp(1.35rem, 2.6vw, 2.1rem);
+    transition: color 0.2s, transform 0.3s var(--ease);
+  }
+  .row:hover .title { color: var(--accent); transform: translateX(0.4rem); }
+
+  .desc {
+    max-width: 40rem;
+    margin-top: 0.4rem;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 47.99rem) {
+    .row { grid-template-columns: 1fr auto; }
+    .row > div { grid-column: 1 / -1; grid-row: 2; }
+  }
+</style>

@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectGrid from '../../components/ProjectGrid.astro';
+import { site } from '../../data/site';
+import { getProjects } from '../../lib/content';
+import { breadcrumbSchema, personSchema } from '../../lib/schema';
+
+const projects = await getProjects();
+const description = `Selected projects by ${site.name}: real-time apps, microservices and secure web platforms.`;
+
+const schema = [
+  personSchema,
+  {
+    '@type': 'CollectionPage',
+    name: `Projects by ${site.name}`,
+    description,
+    url: new URL('/projects/', site.url).href,
+    inLanguage: site.lang,
+  },
+  breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Projects', path: '/projects/' },
+  ]),
+];
+---
+
+<BaseLayout title="Projects" description={description} image="/og/projects.png" schema={schema}>
+  <header class="page-head wrap">
+    <h1>Projects</h1>
+    <p>Things I have built, from real-time chat to microservices.</p>
+  </header>
+  <section class="wrap" style="padding-bottom: clamp(4.5rem, 10vw, 9rem)" aria-label="Project list">
+    <ProjectGrid projects={projects} headingLevel="h2" />
+  </section>
+</BaseLayout>

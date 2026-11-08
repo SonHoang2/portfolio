@@ -1,0 +1,142 @@
+---
+/**
+ * SVG cover that follows the theme and is stable across builds.
+ * For a real image, add `cover` to the project frontmatter.
+ */
+interface Props {
+  pattern: 'grid' | 'bars' | 'waves' | 'orbits';
+  seed: string;
+}
+
+const { pattern, seed } = Astro.props;
+
+function createRandom(text: string) {
+  let hash = 1779033703;
+  for (const char of text) {
+    hash = Math.imul(hash ^ char.charCodeAt(0), 3432918353);
+    hash = (hash << 13) | (hash >>> 19);
+  }
+  return () => {
+    hash = Math.imul(hash ^ (hash >>> 16), 2246822507);
+    hash = Math.imul(hash ^ (hash >>> 13), 3266489909);
+    return ((hash ^= hash >>> 16) >>> 0) / 4294967296;
+  };
+}
+
+const random = createRandom(seed);
+const round = (value: number) => Math.round(value * 10) / 10;
+const W = 800;
+const H = 520;
+
+const tiles =
+  pattern === 'grid'
+    ? Array.from({ length: 16 * 10 }, (_, index) => ({
+        x: (index % 16) * 50,
+        y: 10 + Math.floor(index / 16) * 50,
+        kind: random(),
+        turn: Math.floor(random() * 4) * 90,
+        accent: random() > 0.84,
+      })).filter((tile) => tile.kind > 0.42)
+    : [];
+
+const phase = random() * 6;
+const bars =
+  pattern === 'bars'
+    ? Array.from({ length: 40 }, (_, index) => {
+        const wave = Math.sin(index / 3.2 + phase) * 0.32 + Math.sin(index / 1.4 + phase) * 0.12;
+        const height = round((0.5 + wave + random() * 0.14) * (H - 60));
+        return { x: index * 20, height, accent: height > (H - 60) * 0.72 };
+      })
+    : [];
+
+const waves =
+  pattern === 'waves'
+    ? Array.from({ length: 15 }, (_, row) => {
+        const baseline = 40 + row * 31;
+        const amplitude = 14 + Math.sin(row / 2.4 + phase) * 26;
+        const points = Array.from({ length: 41 }, (_, step) => {
+          const x = step * 20;
+          const y = baseline + Math.sin(step / 4.5 + row / 3 + phase) * amplitude;
+          return `${x},${round(y)}`;
+        });
+        return { points: points.join(' '), accent: row === 8 };
+      })
+    : [];
+
+const center = { x: 300, y: 260 };
+const orbits =
+  pattern === 'orbits'
+    ? [90, 150, 215, 285, 360, 440].map((radius) => {
+        const angle = random() * Math.PI * 2;
+        return {
+          radius,
+          dotX: round(center.x + Math.cos(angle) * radius),
+          dotY: round(center.y + Math.sin(angle) * radius),
+          dotSize: 6 + Math.round(random() * 12),
+        };
+      })
+    : [];
+---
+
+<svg class="cover" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <rect width={W} height={H} class="ground"></rect>
+
+  {
+    tiles.map((tile) => (
+      <g
+        transform={`translate(${tile.x} ${tile.y}) rotate(${tile.turn} 25 25)`}
+        class={tile.accent ? 'accent' : 'ink'}
+      >
+        {tile.kind > 0.8 ? (
+          <rect width="50" height="50" />
+        ) : tile.kind > 0.6 ? (
+          <path d="M0 0H50A50 50 0 0 1 0 50Z" />
+        ) : (
+          <circle cx="25" cy="25" r="12" />
+        )}
+      </g>
+    ))
+  }
+
+  {
+    bars.map((bar) => (
+      <rect
+        x={bar.x + 3}
+        y={H - bar.height}
+        width="14"
+        height={bar.height}
+        class={bar.accent ? 'accent' : 'ink'}
+      />
+    ))
+  }
+
+  {
+    waves.map((wave) => (
+      <polyline points={wave.points} class={wave.accent ? 'line-accent' : 'line'} />
+    ))
+  }
+
+  {
+    pattern === 'orbits' && (
+      <>
+        <circle cx={center.x} cy={center.y} r="58" class="accent" />
+        {orbits.map((orbit) => (
+          <>
+            <circle cx={center.x} cy={center.y} r={orbit.radius} class="line" />
+            <circle cx={orbit.dotX} cy={orbit.dotY} r={orbit.dotSize} class="ink-solid" />
+          </>
+        ))}
+      </>
+    )
+  }
+</svg>
+
+<style>
+  .cover { width: 100%; height: 100%; }
+  .ground { fill: var(--bg-sunken); }
+  .ink { fill: var(--ink); opacity: 0.86; }
+  .ink-solid { fill: var(--ink); }
+  .accent { fill: var(--accent); }
+  .line { fill: none; stroke: var(--ink); stroke-width: 1.5; opacity: 0.55; }
+  .line-accent { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; }
+</style>
