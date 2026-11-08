@@ -167,7 +167,7 @@ const schema = [
     white-space: nowrap;
   }
 
-  /* isolation + background: the name blends only against the hero. */
+  /* isolation + background: keeps the z-index: -1 orb above the page background. */
   .hero {
     --name-size: clamp(4.5rem, 16.5vw, 15rem);
     position: relative;
@@ -189,14 +189,14 @@ const schema = [
 
   /*
    * A sun in light theme, eclipsed into a crescent moon in dark theme.
-   * Size and position follow the name font size so it stays within the name block
-   * and never covers the intro below.
+   * Size and position follow the name font size so it clears the longest name
+   * line (about 2.8em wide) and never covers the intro below.
    */
   .orb {
     position: absolute;
     z-index: -1;
     top: 0;
-    left: calc(var(--name-size) * 2.25);
+    left: calc(var(--name-size) * 2.95);
     width: calc(var(--name-size) * 2.12);
     aspect-ratio: 1;
     overflow: hidden;
@@ -235,11 +235,8 @@ const schema = [
 
   h1 { letter-spacing: -0.045em; line-height: 1.06; }
 
-  /* White text + difference: inverts over the orb in both themes. */
   .name {
     display: block;
-    color: #fff;
-    mix-blend-mode: difference;
     font-size: var(--name-size);
     overflow-wrap: anywhere;
   }
